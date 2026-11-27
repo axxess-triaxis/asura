@@ -9,6 +9,8 @@ Four position papers by **Sudipta Koushik Sarmah**, put through controlled exper
 | [The Uncanny Valley of Intelligence](uncanny-valley.md) | Self-explanations become unreliable ("interpretability collapse") | U3: explanation faithfulness with probes and counterfactuals | 🔄 Running |
 | [The Hardest Tradeoff in AI Safety](uncanny-valley.md) | Optimizing for trust/approval produces strategic imperfection | U1: Goodhart curve with a simulated rater | ⏳ Queued |
 
+An exploratory language-modeling baseline is documented in [Assamese corpus pilot runs](assamese-corpus-pilot.md).
+
 ## Scope: what small models can and can't test
 Small, controlled models can test **mechanisms**: does a given training pressure produce a given
 behaviour? They can't test claims about AGI "being", geopolitical misattribution or CBRN
