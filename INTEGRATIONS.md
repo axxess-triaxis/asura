@@ -111,3 +111,72 @@ Priority: ⭐ = do soon, high value for this project · ○ = useful later · Co
 3. **Anthropic's sycophancy evals + Claude API.** Moves U1 from a toy model to real frontier models.
 4. **TransformerLens + SAELens.** Turn U3 into a real interpretability study on a small pretrained model.
 5. **AI4Bharat corpora + Fairlearn.** Real Assamese data for the Clean Data paper, and real fairness metrics for Imported Algo.
+
+## Opt-in Asura integrations
+
+Install the base project dependencies as usual, then install optional integrations only when needed:
+
+```powershell
+pip install -r requirements.txt -r requirements-integrations.txt
+```
+
+### Kaggle GPU training and public text data
+
+Run Asura from a Kaggle notebook with a GPU accelerator enabled; `asura.device.get_device()` selects CUDA automatically. Store `KAGGLE_USERNAME` and `KAGGLE_KEY` in Kaggle Secrets and expose them to the notebook process through `kaggle_secrets.UserSecretsClient` (or configure the Kaggle CLI credentials in the environment). Never put credentials in the notebook or repository.
+
+In a Kaggle notebook, read credentials from Kaggle Secrets into the process environment:
+
+```python
+import os
+from kaggle_secrets import UserSecretsClient
+
+secrets = UserSecretsClient()
+os.environ["KAGGLE_USERNAME"] = secrets.get_secret("KAGGLE_USERNAME")
+os.environ["KAGGLE_KEY"] = secrets.get_secret("KAGGLE_KEY")
+```
+
+From the Asura repository root, download and train only from a named public dataset:
+
+```python
+!python -m asura.integrations.kaggle --dataset owner/public-text-dataset --config experiments/configs/smoke.json
+```
+
+The integration checks Kaggle's metadata and refuses datasets not confirmed public, safely extracts the archive, and accepts UTF-8 `.txt` files only. Convert other file formats to text yourself before training. The dataset identifier is required; no dataset is selected or downloaded implicitly.
+
+### Local MLflow tracking
+
+MLflow is disabled unless `tracking.enabled` is explicitly set to `true` in the training JSON config:
+
+```json
+{
+  "tracking": {
+    "enabled": true,
+    "uri": "file:./mlruns",
+    "experiment": "asura-local"
+  }
+}
+```
+
+Only local `file:` tracking URIs are accepted. Config parameters and final numeric metrics are logged; dataset paths, model checkpoints, prompts, and example text are not uploaded or logged as artifacts.
+
+### LangSmith metrics-only tracing
+
+LangSmith is disabled by default. To explicitly log a synthetic/public evaluation summary, set `ASURA_LANGSMITH_TRACE=1`, configure `LANGSMITH_API_KEY` in an environment/secret store, then call:
+
+```python
+from asura.integrations.langsmith import log_eval_metrics
+
+log_eval_metrics({"val_loss": 1.2, "acc_all": 0.8}, data_policy="synthetic")
+```
+
+The required policy must be `synthetic` or `public`; only finite numeric metrics and that label are sent. Prompt text, generated samples, checkpoints, and dataset paths are never included. No credentials belong in source control or chat.
+
+### lm-evaluation-harness
+
+Install the optional dependencies above, then load the plugin module explicitly:
+
+```powershell
+lm-eval run --model asura --model_args pretrained=runs/smoke/seed0/ckpt.pt,device=auto --tasks hellaswag --plugins asura.integrations.lm_eval
+```
+
+The adapter implements the harness model interface directly over Asura checkpoints and its byte tokenizer; it does not convert the model or require Transformers. Asura has no BOS/EOS token, so the adapter uses byte `0` (NUL) as a prefix sentinel for empty-context likelihoods. Context length is measured in UTF-8 bytes, not words or tokenizer pieces, so standard benchmarks can be slow and scores should be interpreted accordingly.

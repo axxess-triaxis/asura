@@ -16,6 +16,8 @@ experiments/run.py  grid of conditions x seeds -> mean, std, 95% CI
 papers/TEMPLATE.md  worksheet that turns a paper claim into an experiment
 ```
 
+Optional Kaggle, MLflow, LangSmith, and lm-evaluation-harness integrations are documented in [INTEGRATIONS.md](INTEGRATIONS.md).
+
 ## Quick start (PowerShell)
 
 ```powershell
