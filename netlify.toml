@@ -1,0 +1,5 @@
+[build]
+  command = "pip install mkdocs-material 'mkdocstrings[python]' && pip install torch --index-url https://download.pytorch.org/whl/cpu && mkdocs build"
+  publish = "site"
+[build.environment]
+  PYTHON_VERSION = "3.12"

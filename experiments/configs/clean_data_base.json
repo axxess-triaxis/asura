@@ -1,0 +1,8 @@
+{
+  "name": "clean_data_base",
+  "data": {"type": "synthetic", "tasks": ["add"], "digits": 2, "n_train": 8000, "n_test": 600},
+  "model": {"context_len": 32, "d_model": 96, "n_layers": 3, "n_heads": 4},
+  "train": {"steps": 1500, "batch_size": 64, "lr": 2e-3, "warmup": 100, "weight_decay": 0.1,
+            "log_every": 250, "eval_every": 750},
+  "eval": {"task_samples": 150, "loss_batches": 5}
+}

@@ -1,0 +1,8 @@
+{
+  "name": "smoke",
+  "data": {"type": "synthetic", "tasks": ["add", "reverse"], "digits": 2, "n_train": 8000, "n_test": 400},
+  "model": {"context_len": 32, "d_model": 96, "n_layers": 3, "n_heads": 4},
+  "train": {"steps": 1500, "batch_size": 64, "lr": 2e-3, "warmup": 100, "weight_decay": 0.1,
+            "log_every": 100, "eval_every": 500},
+  "eval": {"task_samples": 200, "loss_batches": 5}
+}

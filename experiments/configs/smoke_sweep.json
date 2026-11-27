@@ -1,0 +1,7 @@
+{
+  "base": "experiments/configs/smoke.json",
+  "name": "smoke_sweep_depth",
+  "seeds": [0, 1, 2],
+  "grid": {"model.n_layers": [1, 3]},
+  "metric": "acc_all"
+}

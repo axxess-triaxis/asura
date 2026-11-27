@@ -1,0 +1,104 @@
+site_name: Asura
+site_description: A from-scratch small language model and test bench for empirically testing AI safety and AI-policy research claims.
+site_author: Sudipta Koushik Sarmah
+# set to your GitHub Pages / Cloudflare Pages URL once hosted
+# site_url: https://<your-username>.github.io/asura/
+repo_name: asura
+# repo_url: https://github.com/<your-username>/asura
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep orange
+      accent: amber
+      toggle: {icon: material/weather-night, name: Dark mode}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep orange
+      accent: amber
+      toggle: {icon: material/weather-sunny, name: Light mode}
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - def_list
+  - toc: {permalink: true}
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed: {alternate_style: true}
+  - pymdownx.highlight: {anchor_linenums: true}
+  - pymdownx.inlinehilite
+  - pymdownx.arithmatex: {generic: true}
+  - pymdownx.snippets: {base_path: ["."], check_paths: true}
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."]
+          options:
+            show_source: true
+            show_root_heading: true
+            show_if_no_docstring: true
+            show_signature_annotations: true
+            docstring_style: google
+            members_order: source
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Install & first run: getting-started/install.md
+      - Run on a free GPU: getting-started/gpu.md
+      - Troubleshooting: getting-started/troubleshooting.md
+  - Concepts:
+      - Architecture: concepts/architecture.md
+      - Tokenizer & data: concepts/data.md
+      - Training: concepts/training.md
+      - Evaluation & statistics: concepts/evaluation.md
+  - Guides:
+      - Configs & sweeps: guides/experiments.md
+      - Testing a paper claim: guides/new-experiment.md
+      - Learning roadmap: guides/roadmap.md
+  - Research:
+      - research/index.md
+      - Imported Algo: research/imported-algo.md
+      - Clean Data Paradox: research/clean-data-paradox.md
+      - Uncanny Valley & Hardest Tradeoff: research/uncanny-valley.md
+      - Worksheet template: research/template.md
+  - Reference:
+      - Python API: reference/api.md
+      - CLI: reference/cli.md
+      - Integrations: reference/integrations.md
+  - Project:
+      - Hosting the docs: project/hosting.md
+      - Contributing: project/contributing.md
+      - Changelog: project/changelog.md

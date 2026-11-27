@@ -1,0 +1,1 @@
+--8<-- "papers/uncanny_valley/PLAN.md"

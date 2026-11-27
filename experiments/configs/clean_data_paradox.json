@@ -1,0 +1,13 @@
+{
+  "base": "experiments/configs/clean_data_base.json",
+  "name": "clean_data_paradox",
+  "seeds": [0, 1, 2],
+  "conditions": {
+    "C0_clean_only":        {"data.messy_frac": 0.0},
+    "C1_messy_inputs":      {"data.messy_frac": 0.5},
+    "C2_messy+random_noise":{"data.messy_frac": 0.5, "data.label_noise": 0.2},
+    "C3_messy+systematic":  {"data.messy_frac": 0.5, "data.systematic_noise": 1.0}
+  },
+  "metric": "acc_all",
+  "report": ["acc_add", "acc_add~messy~odd", "acc_add~messy~even", "plus1_add~messy~even"]
+}

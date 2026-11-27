@@ -1,0 +1,1 @@
+--8<-- "papers/TEMPLATE.md"

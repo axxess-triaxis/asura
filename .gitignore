@@ -1,0 +1,9 @@
+.venv/
+runs/
+__pycache__/
+*.pt
+dist/
+papers/source/
+papers/text/
+site/
+*.log
