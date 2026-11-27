@@ -3,3 +3,4 @@ kaggle
 lm_eval
 langsmith
 mlflow
+openai

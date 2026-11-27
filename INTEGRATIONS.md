@@ -171,6 +171,32 @@ log_eval_metrics({"val_loss": 1.2, "acc_all": 0.8}, data_policy="synthetic")
 
 The required policy must be `synthetic` or `public`; only finite numeric metrics and that label are sent. Prompt text, generated samples, checkpoints, and dataset paths are never included. No credentials belong in source control or chat.
 
+### Ollama Cloud comparison model
+
+The optional Ollama client uses the OpenAI-compatible endpoint at `https://ollama.com/v1`,
+with `deepseek-v4.1-flash` as its default model. Create an API key at
+[ollama.com/settings/keys](https://ollama.com/settings/keys), then provide it through
+`OLLAMA_API_KEY` (never commit it or paste it into chat):
+
+```powershell
+$env:OLLAMA_API_KEY = "<your Ollama API key>"
+```
+
+Only explicitly public or synthetic inputs are accepted because message content is sent to
+Ollama's hosted API:
+
+```python
+from asura.integrations.ollama import chat_completion
+
+reply = chat_completion(
+    [{"role": "user", "content": "Does this informal example preserve its meaning?"}],
+    data_policy="synthetic",
+)
+```
+
+This is a hosted comparison/evaluation API, not the local vLLM inference engine. The client
+is disabled unless called explicitly and does not log prompts or API keys.
+
 ### lm-evaluation-harness
 
 Install the optional dependencies above, then load the plugin module explicitly:
