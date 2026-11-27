@@ -1,0 +1,5 @@
+# Optional integrations; install only when needed.
+kaggle
+lm_eval
+langsmith
+mlflow
