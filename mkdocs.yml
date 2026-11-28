@@ -90,6 +90,7 @@ nav:
       - Learning roadmap: guides/roadmap.md
   - Research:
       - research/index.md
+      - Assamese corpus pilot: research/assamese-corpus-pilot.md
       - Imported Algo: research/imported-algo.md
       - Clean Data Paradox: research/clean-data-paradox.md
       - Uncanny Valley & Hardest Tradeoff: research/uncanny-valley.md
