@@ -1,5 +1,6 @@
 """Opt-in, local-only MLflow experiment tracking."""
 
+import json
 from urllib.parse import urlsplit
 
 
@@ -38,18 +39,25 @@ def _flatten_params(value, prefix=""):
             params.update(_flatten_params(child, child_prefix))
     elif isinstance(value, (str, int, float, bool)) or value is None:
         params[prefix] = str(value)
+    elif isinstance(value, (list, tuple)):
+        params[prefix] = json.dumps(list(value))
     return params
 
 
-def log_mlflow_run(config: dict, result: dict, seed: int) -> None:
-    tracking = config.get("tracking", {})
-    uri = validate_local_tracking_uri(tracking.get("uri", "file:./mlruns"))
+def require_mlflow() -> None:
     try:
         import mlflow
     except ImportError as exc:
         raise RuntimeError(
             "MLflow tracking requires the optional dependencies in requirements-integrations.txt"
         ) from exc
+
+
+def log_mlflow_run(config: dict, result: dict, seed: int) -> None:
+    tracking = config.get("tracking", {})
+    uri = validate_local_tracking_uri(tracking.get("uri", "file:./mlruns"))
+    require_mlflow()
+    import mlflow
 
     mlflow.set_tracking_uri(uri)
     mlflow.set_experiment(tracking.get("experiment", config["name"]))

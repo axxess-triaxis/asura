@@ -3,6 +3,8 @@
 import argparse
 import json
 import re
+import shutil
+import tempfile
 import zipfile
 from pathlib import Path, PurePosixPath
 
@@ -35,6 +37,21 @@ def _extract_archive_safely(archive: Path, destination: Path) -> None:
         zipped.extractall(destination)
 
 
+def _replace_extracted_archive(archive: Path, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(prefix="asura-extract-", dir=destination.parent))
+    try:
+        _extract_archive_safely(archive, staging)
+        if not any(staging.rglob("*.txt")):
+            raise ValueError("extracted dataset contains no .txt files")
+        if destination.exists():
+            shutil.rmtree(destination)
+        staging.replace(destination)
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging)
+
+
 def download_public_dataset(dataset_id: str, output_dir: str | Path) -> Path:
     """Download and safely extract a Kaggle dataset after verifying it is public."""
     dataset_id = validate_dataset_id(dataset_id)
@@ -51,20 +68,25 @@ def download_public_dataset(dataset_id: str, output_dir: str | Path) -> Path:
     if getattr(metadata, "isPrivate", None) is not False:
         raise ValueError(f"Kaggle did not confirm that {dataset_id!r} is public; refusing download")
 
-    dataset_dir = Path(output_dir).expanduser().resolve() / dataset_id.split("/", 1)[1]
+    owner, dataset_name = dataset_id.split("/", 1)
+    dataset_dir = Path(output_dir).expanduser().resolve() / owner / dataset_name
     dataset_dir.mkdir(parents=True, exist_ok=True)
+    for stale_archive in dataset_dir.glob("*.zip"):
+        stale_archive.unlink()
     api.dataset_download_files(dataset_id, path=str(dataset_dir), quiet=False, unzip=False)
     archives = sorted(dataset_dir.glob("*.zip"), key=lambda path: path.stat().st_mtime, reverse=True)
     if not archives:
         raise FileNotFoundError(f"Kaggle API did not produce a dataset archive in {dataset_dir}")
 
     extracted = dataset_dir / "extracted"
-    extracted.mkdir(parents=True, exist_ok=True)
-    _extract_archive_safely(archives[0], extracted)
-    if not any(extracted.rglob("*.txt")):
-        raise ValueError(
-            f"{dataset_id!r} contains no .txt files; convert public text data to UTF-8 .txt files first"
-        )
+    try:
+        _replace_extracted_archive(archives[0], extracted)
+    except ValueError as exc:
+        if "contains no .txt files" in str(exc):
+            raise ValueError(
+                f"{dataset_id!r} contains no .txt files; convert public text data to UTF-8 .txt files first"
+            ) from exc
+        raise
     return extracted
 
 

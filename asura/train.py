@@ -42,10 +42,16 @@ def apply_overrides(cfg, sets):
 
 def train(cfg: dict, seed: int = 0, out_root="runs", verbose=True):
     cfg = copy.deepcopy(cfg)
-    from .integrations.tracking import log_mlflow_run, mlflow_enabled, validate_local_tracking_uri
+    from .integrations.tracking import (
+        log_mlflow_run,
+        mlflow_enabled,
+        require_mlflow,
+        validate_local_tracking_uri,
+    )
     tracking_enabled = mlflow_enabled(cfg)
     if tracking_enabled:
         validate_local_tracking_uri(cfg["tracking"].get("uri", "file:./mlruns"))
+        require_mlflow()
     torch.manual_seed(seed)
     gen = torch.Generator().manual_seed(seed)
     tc = cfg["train"]
