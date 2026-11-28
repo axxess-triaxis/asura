@@ -30,6 +30,15 @@ API pages are generated from docstrings.
 .venv\Scripts\python -m mkdocs serve
 ```
 
+## Tests
+Run the test suite with:
+
+```powershell
+.venv\Scripts\python -m unittest discover -s tests -v
+```
+
+GitHub Actions runs this suite for pull requests and pushes to `main`.
+
 ## Not committed
 `runs/`, checkpoints, `.venv/`, `dist/`, the built `site/`, and the source paper PDFs/text
 (`papers/source/`, `papers/text/`).
