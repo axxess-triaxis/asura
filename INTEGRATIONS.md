@@ -206,3 +206,24 @@ lm-eval run --model asura --model_args pretrained=runs/smoke/seed0/ckpt.pt,devic
 ```
 
 The adapter implements the harness model interface directly over Asura checkpoints and its byte tokenizer; it does not convert the model or require Transformers. Asura has no BOS/EOS token, so the adapter uses byte `0` (NUL) as a prefix sentinel for empty-context likelihoods. Context length is measured in UTF-8 bytes, not words or tokenizer pieces, so standard benchmarks can be slow and scores should be interpreted accordingly.
+
+### ARC-AGI benchmarking
+
+Asura can evaluate a local checkpoint on ARC-AGI task JSON files and write submission files compatible with the
+[AXXESS TRIaxis ARC-AGI benchmarking fork](https://github.com/axxess-triaxis/arc-agi-benchmarking). This adapter
+does not download benchmark datasets or require the fork's API-provider dependencies. Obtain task data separately
+and use only splits you are permitted to evaluate:
+
+```powershell
+python -m asura.integrations.arc_agi `
+  --checkpoint runs\smoke\seed0\ckpt.pt `
+  --tasks-dir path\to\arc-agi-benchmarking\data\sample\tasks `
+  --output-dir runs\arc-agi\asura-smoke
+```
+
+The adapter exposes training examples and test inputs only; expected test outputs are used locally for accuracy
+when the task files include them. It writes one JSON submission per task in the fork's standard `attempt_1` schema,
+which can then be scored with that repository's `src/arc_agi_benchmarking/scoring/scoring.py`. Asura uses a
+byte-level tokenizer, so prompts longer than the checkpoint's `context_len` fail explicitly; train a checkpoint
+with a larger context for full ARC tasks. Invalid model output is retained as text and counted in `invalid_outputs`
+instead of being silently treated as a grid.
