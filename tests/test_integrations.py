@@ -7,10 +7,19 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 from zipfile import ZipFile
 
-from asura.integrations.kaggle import _extract_archive_safely, validate_dataset_id
+from asura.integrations.kaggle import (
+    _extract_archive_safely,
+    _replace_extracted_archive,
+    validate_dataset_id,
+)
 from asura.integrations.langsmith import log_eval_metrics, validate_eval_metrics
 from asura.integrations.ollama import DEFAULT_MODEL, OLLAMA_BASE_URL, chat_completion
-from asura.integrations.tracking import mlflow_enabled, validate_local_tracking_uri
+from asura.integrations.tracking import (
+    _flatten_params,
+    mlflow_enabled,
+    require_mlflow,
+    validate_local_tracking_uri,
+)
 
 
 class IntegrationSafetyTests(unittest.TestCase):
@@ -31,6 +40,35 @@ class IntegrationSafetyTests(unittest.TestCase):
                 _extract_archive_safely(archive, destination)
             self.assertFalse((root / "outside.txt").exists())
 
+    def test_kaggle_replaces_stale_extracted_files(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            destination = root / "extracted"
+            destination.mkdir()
+            (destination / "old.txt").write_text("stale", encoding="utf-8")
+            archive = root / "dataset.zip"
+            with ZipFile(archive, "w") as zipped:
+                zipped.writestr("new.txt", "fresh")
+
+            _replace_extracted_archive(archive, destination)
+
+            self.assertFalse((destination / "old.txt").exists())
+            self.assertEqual((destination / "new.txt").read_text(encoding="utf-8"), "fresh")
+
+    def test_kaggle_replacement_rejects_archive_without_text(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            destination = root / "extracted"
+            destination.mkdir()
+            (destination / "old.txt").write_text("stale", encoding="utf-8")
+            archive = root / "dataset.zip"
+            with ZipFile(archive, "w") as zipped:
+                zipped.writestr("image.png", b"not text")
+
+            with self.assertRaisesRegex(ValueError, "no .txt files"):
+                _replace_extracted_archive(archive, destination)
+            self.assertTrue((destination / "old.txt").exists())
+
     def test_mlflow_is_opt_in_and_local_only(self):
         self.assertFalse(mlflow_enabled({}))
         self.assertFalse(mlflow_enabled({"tracking": {"enabled": False}}))
@@ -38,6 +76,15 @@ class IntegrationSafetyTests(unittest.TestCase):
         self.assertEqual(validate_local_tracking_uri("file:./mlruns"), "file:./mlruns")
         with self.assertRaises(ValueError):
             validate_local_tracking_uri("https://tracking.example")
+
+    def test_mlflow_logs_list_hyperparameters_as_json(self):
+        params = _flatten_params({"train": {"betas": [0.9, 0.95]}})
+        self.assertEqual(params["train.betas"], "[0.9, 0.95]")
+
+    def test_mlflow_dependency_is_checked_before_training(self):
+        with patch.dict(sys.modules, {"mlflow": None}):
+            with self.assertRaisesRegex(RuntimeError, "requirements-integrations.txt"):
+                require_mlflow()
 
     def test_langsmith_requires_public_or_synthetic_numeric_metrics(self):
         self.assertEqual(
